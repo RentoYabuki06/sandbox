@@ -63,6 +63,7 @@ class TodoInputField extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final TextEditingController textController = TextEditingController();
+    final notifier = ref.read(todoListProvider.notifier);
 
     return Padding(
       padding: EdgeInsets.all(8.0),
@@ -78,24 +79,24 @@ class TodoInputField extends ConsumerWidget {
                 border: OutlineInputBorder(),
               ),
               onSubmitted: (value) {
-                ref.read(todoListProvider).add(
-                      Todo(
-                        text: value,
-                        addedDate: DateTime.now(),
-                      ),
-                    );
+                notifier.state.add(
+                  Todo(
+                    text: value,
+                    addedDate: DateTime.now(),
+                  ),
+                );
                 textController.clear();
               },
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              ref.read(todoListProvider).add(
-                    Todo(
-                      text: textController.text,
-                      addedDate: DateTime.now(),
-                    ),
-                  );
+              notifier.state.add(
+                Todo(
+                  text: textController.text,
+                  addedDate: DateTime.now(),
+                ),
+              );
               textController.clear();
             },
             child: const Text('Add todo'),
@@ -121,7 +122,8 @@ class TodoList extends ConsumerWidget {
           key: ValueKey(todos[index]),
           direction: DismissDirection.startToEnd,
           onDismissed: (direction) {
-            ref.read(todoListProvider).removeAt(index);
+            final notifier = ref.read(todoListProvider.notifier);
+            notifier.state.removeAt(index);
           },
           background: Container(
             color: Colors.red,
@@ -142,7 +144,8 @@ class TodoList extends ConsumerWidget {
             secondary: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
-                ref.read(todoListProvider).removeAt(index);
+                final notifier = ref.read(todoListProvider.notifier);
+                notifier.state.removeAt(index);
               },
             ),
           ),

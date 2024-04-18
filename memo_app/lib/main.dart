@@ -57,7 +57,7 @@ class MemoInputField extends ConsumerWidget {
             child: TextField(
               controller: textController,
               decoration: InputDecoration(
-                hintText: 'Enter new memo',
+                hintText: 'Enter new memo', // 薄く表示されているコメント
                 border: OutlineInputBorder(), // 境界線をアウトラインで描画
               ),
               onSubmitted: (value) {
@@ -115,6 +115,7 @@ class MemoList extends ConsumerWidget {
             padding: EdgeInsets.only(right: 20.0),
             child: Icon(Icons.delete, color: Colors.white),
           ),
+          // Card : 周りから浮き出ている表示
           child: Card(
             key: ValueKey(memo), // ReorderableListViewのために追加
             elevation: 4.0, // カードの影の大きさ
@@ -143,6 +144,7 @@ class MemoList extends ConsumerWidget {
           ),
         );
       },
+      // 順番入れ替え
       onReorder: (int oldIndex, int newIndex) {
         if (newIndex > oldIndex) {
           newIndex -= 1;
