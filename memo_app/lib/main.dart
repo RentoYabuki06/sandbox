@@ -8,6 +8,10 @@ class Memo {
   bool isCompleted; // 完了状態を追加
   final DateTime createdTime; // 作成日時フィールドを追加
 
+  // Memoクラスのコンストラクタの定義
+  // this.textだけ必須、isCompletedはデフォルトでfalse, createdTimeはnull. ?はnullable
+  // ??演算子はnullチェック、左側がnullの場合は右側の値が代入される
+  // コンストラクタの後に":"をつけることでフィールドの初期化処理を記述できる
   Memo(this.text, {this.isCompleted = false, DateTime? createdTime})
       : this.createdTime = createdTime ?? DateTime.now(); // 現在の日時で初期化
 }
@@ -26,6 +30,7 @@ void main() {
           body: Column(
             children: [
               MemoInputField(),
+              //expandedは利用可能な余白を全て占有し、画面上で可能な限り表示
               Expanded(
                 child: MemoList(),
               ),
@@ -40,11 +45,12 @@ void main() {
 // メモの入力フィールド
 class MemoInputField extends ConsumerWidget {
   @override
+  // consumerwidgetで監視するならwidgetref refを引数に追加
   Widget build(BuildContext context, WidgetRef ref) {
     final TextEditingController textController = TextEditingController();
 
     return Padding(
-      padding: EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(8.0), // 4方向全ての側面に8.0の余白
       child: Row(
         children: [
           Expanded(
@@ -52,15 +58,15 @@ class MemoInputField extends ConsumerWidget {
               controller: textController,
               decoration: InputDecoration(
                 hintText: 'Enter new memo',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(), // 境界線をアウトラインで描画
               ),
               onSubmitted: (value) {
                 final currentList = ref.read(memoListProvider);
                 ref.read(memoListProvider.notifier).state = [
-                  ...currentList,
-                  Memo(value)
+                  ...currentList, // 現状のリストを展開し
+                  Memo(value) // 新しい要素を追加
                 ];
-                textController.clear();
+                textController.clear(); //　入力フィールドを初期化
               },
             ),
           ),
