@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: ^0.17.0  # intl パッケージの追加
+  # flutter_riverpod: ^0.14.0+3
 
 
   # The following adds the Cupertino Icons font to your application.
