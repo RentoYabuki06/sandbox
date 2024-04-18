@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart'; // intlパッケージをインポート
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-// メモのデータモデル
-class Memo {
-  final String text;
-  bool isCompleted; // 完了状態を追加
-  final DateTime createdTime; // 作成日時フィールドを追加
+part 'memo.freezed.dart';
 
-  // Memoクラスのコンストラクタの定義
-  // this.textだけ必須、isCompletedはデフォルトでfalse, createdTimeはnull. ?はnullable
-  // ??演算子はnullチェック、左側がnullの場合は右側の値が代入される
-  // コンストラクタの後に":"をつけることでフィールドの初期化処理を記述できる
-  Memo(this.text, {this.isCompleted = false, DateTime? createdTime})
-      : this.createdTime = createdTime ?? DateTime.now(); // 現在の日時で初期化
+// Memoクラスをfreezedのクラスに変更
+@freezed
+class Memo with _$Memo {
+  const factory Memo({
+    required String text,
+    @Default(false) bool isCompleted,
+    required DateTime createdTime,
+  }) = _Memo;
+
+  factory Memo(
+      {required String text,
+      required bool isCompleted,
+      required DateTime createdTime}) = _Memo;
+
+  // コンストラクタのファクトリメソッドを追加
+  factory Memo.withText(String text) => Memo(
+        text: text,
+        createdTime: DateTime.now(),
+      );
 }
 
 // メモのリストを管理するProvider
@@ -64,7 +74,7 @@ class MemoInputField extends ConsumerWidget {
                 final currentList = ref.read(memoListProvider);
                 ref.read(memoListProvider.notifier).state = [
                   ...currentList, // 現状のリストを展開し
-                  Memo(value) // 新しい要素を追加
+                  Memo.withText(value) // 新しい要素を追加
                 ];
                 textController.clear(); //　入力フィールドを初期化
               },
@@ -76,7 +86,7 @@ class MemoInputField extends ConsumerWidget {
               final currentList = ref.read(memoListProvider);
               ref.read(memoListProvider.notifier).state = [
                 ...currentList,
-                Memo(textController.text)
+                Memo.withText(textController.text) //withTextによって新しいオブジェクトを作成
               ];
               textController.clear();
             },
@@ -129,8 +139,10 @@ class MemoList extends ConsumerWidget {
               trailing: Checkbox(
                 value: memo.isCompleted,
                 onChanged: (bool? newValue) {
-                  memo.isCompleted = newValue!;
-                  ref.read(memoListProvider.notifier).state = List.from(memos);
+                  final updatedMemo = memo.copyWith(isCompleted: newValue!);
+                  ref.read(memoListProvider.notifier).state = [
+                    for (final m in memos) m == memo ? updatedMemo : m,
+                  ];
                   // SnackBarの表示
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
