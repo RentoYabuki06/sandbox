@@ -13,6 +13,7 @@ class CounterApp extends StatefulWidget {
 }
 
 // 内部状態を管理するクラス(=プライベート)のため、アンダーバーから始める
+// <CounterApp>の部分は、_CounterAppStateがどのStatefulWidgetに関連付けられているかを表す
 class _CounterAppState extends State<CounterApp> {
   int _counter = 0; // カウンターの初期値
 
