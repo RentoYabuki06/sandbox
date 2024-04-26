@@ -12,10 +12,12 @@ class Memo {
   // this.textだけ必須、isCompletedはデフォルトでfalse, createdTimeはnull. ?はnullable
   // ??演算子はnullチェック、左側がnullの場合は右側の値が代入される
   // コンストラクタの後に":"をつけることでフィールドの初期化処理を記述できる
+  // createdTimeがnullでない時には現在の日時で初期化
   Memo(this.text, {this.isCompleted = false, DateTime? createdTime})
-      : this.createdTime = createdTime ?? DateTime.now(); // 現在の日時で初期化
+      : this.createdTime = createdTime ?? DateTime.now();
 }
 
+// 状態管理
 // メモのリストを管理するProvider
 final memoListProvider = StateProvider<List<Memo>>((ref) => []);
 
@@ -57,6 +59,7 @@ class MemoInputField extends ConsumerWidget {
             child: TextField(
               controller: textController,
               decoration: InputDecoration(
+                labelText: '新しいメモを追加しましょう',
                 hintText: 'Enter new memo', // 薄く表示されているコメント
                 border: OutlineInputBorder(), // 境界線をアウトラインで描画
               ),
@@ -99,7 +102,7 @@ class MemoList extends ConsumerWidget {
         final memo = memos[index];
         // 日時をフォーマットする
         final formattedTime =
-            DateFormat('yyyy年MM月dd日HH:mm').format(memo.createdTime);
+            DateFormat('yyyy年MM月dd日 HH:mm').format(memo.createdTime);
 
         return Dismissible(
           key: Key(memo.text + index.toString()), // 一意のキーを確保
