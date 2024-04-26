@@ -14,7 +14,7 @@ class Memo {
   // コンストラクタの後に":"をつけることでフィールドの初期化処理を記述できる
   // createdTimeがnullでない時には現在の日時で初期化
   Memo(this.text, {this.isCompleted = false, DateTime? createdTime})
-      : this.createdTime = createdTime ?? DateTime.now();
+      : createdTime = createdTime ?? DateTime.now();
 }
 
 // 状態管理
