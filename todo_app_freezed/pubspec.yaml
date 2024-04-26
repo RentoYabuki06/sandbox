@@ -1,0 +1,29 @@
+name: todo_app_freezed
+description: "A new Flutter project."
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  freezed_annotation: ^2.4.1
+  intl: ^0.17.0
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  freezed: ^2.5.2
+  build_runner: ^2.4.9
+  json_serializable:
+
+flutter:
+  uses-material-design: true
+
