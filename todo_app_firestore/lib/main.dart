@@ -15,9 +15,9 @@ part 'main.g.dart';
 
 // FirebaseFirestoreインスタンスの取得
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-  // インスタンスを正しく取得できているかの検証用
-  final instance = FirebaseFirestore.instance;
-  print('Firestore instance: $instance'); // インスタンスを出力
+  // // インスタンスを正しく取得できているかの検証用
+  // final instance = FirebaseFirestore.instance;
+  // print('Firestore instance: $instance'); // インスタンスを出力
   return FirebaseFirestore.instance;
 });
 
@@ -25,6 +25,7 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) {
 @freezed
 class Memo with _$Memo {
   const factory Memo({
+    String? id,
     required String text,
     @Default(false) bool isCompleted,
     @DateTimeTimestampConverter() required DateTime createdTime,
@@ -83,6 +84,7 @@ class MemoInputField extends ConsumerWidget {
                 hintText: 'Enter new memo', // 薄く表示されているコメント
                 border: OutlineInputBorder(), // 境界線をアウトラインで描画
               ),
+              // データベースの読み書き操作など時間のかかる可能性のある処理は非同期で行われる
               onSubmitted: (value) async {
                 final firestore = ref.read(firestoreProvider);
                 await firestore.collection('memos').add({
@@ -97,15 +99,12 @@ class MemoInputField extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
-              print(1);
               final firestore = ref.read(firestoreProvider);
-              print(2);
               await firestore.collection('memos').add({
                 'text': textController.text,
                 'isCompleted': false,
                 'createdTime': DateTime.now(),
               });
-              print(3);
               textController.clear();
             },
           ),
@@ -117,8 +116,13 @@ class MemoInputField extends ConsumerWidget {
 
 Stream<List<Memo>> getMemoListStream() {
   return FirebaseFirestore.instance.collection('memos').snapshots().map(
-      (querySnapshot) =>
-          querySnapshot.docs.map((doc) => Memo.fromJson(doc.data())).toList());
+        (querySnapshot) => querySnapshot.docs
+            .map(
+              (doc) => Memo.fromJson(doc.data() as Map<String, dynamic>)
+                  .copyWith(id: doc.id),
+            )
+            .toList(),
+      );
 }
 
 // メモのリストを表示するウィジェット
@@ -141,10 +145,10 @@ class MemoList extends ConsumerWidget {
                     DateFormat('yyyy年MM月dd日 HH:mm').format(memo.createdTime);
 
                 return Dismissible(
-                  key: Key(memo.text + index.toString()), // 一意のキーを確保
+                  key: Key(memo.id ?? 'dummy'), // 一意のキーを確保
                   direction: DismissDirection.startToEnd, // 右から左へのスワイプのみ許可
                   onDismissed: (direction) async {
-                    await firestore.collection('memos').doc(memo.text).delete();
+                    await firestore.collection('memos').doc(memo.id).delete();
                     final updatedList = List<Memo>.from(memos)..removeAt(index);
                     ref.read(memoListProvider.notifier).state = updatedList;
                   },
@@ -168,13 +172,25 @@ class MemoList extends ConsumerWidget {
                       subtitle: Text(formattedTime), // 作成日時を表示
                       trailing: Checkbox(
                         value: memo.isCompleted,
-                        onChanged: (bool? newValue) {
-                          final updatedMemos = memos
-                              .map((m) => m == memo
-                                  ? memo.copyWith(
-                                      isCompleted: newValue ?? false)
-                                  : m)
-                              .toList();
+                        onChanged: (bool? newValue) async {
+                          // firebaseに保存する処理を追加
+                          await firestore
+                              .collection('memos')
+                              .doc(memo.id)
+                              .update({
+                            'isCompleted': newValue,
+                          });
+                          // ローカルのメモリストを更新
+                          // map関数でmemosリスト内の要素を捜査
+                          final updatedMemos = memos.map((m) {
+                            // 一致しているidを見つけたら変更
+                            if (m.id == memo.id) {
+                              // newValueがnullの場合はfalse
+                              return m.copyWith(isCompleted: newValue ?? false);
+                            }
+                            return m;
+                          }).toList();
+                          // memoListProviderの状態を更新してUIに変更を通知
                           ref.read(memoListProvider.notifier).state =
                               updatedMemos;
                           // SnackBarの表示
