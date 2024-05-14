@@ -15,9 +15,6 @@ part 'main.g.dart';
 
 // FirebaseFirestoreインスタンスの取得
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-  // // インスタンスを正しく取得できているかの検証用
-  // final instance = FirebaseFirestore.instance;
-  // print('Firestore instance: $instance'); // インスタンスを出力
   return FirebaseFirestore.instance;
 });
 
